@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Live Matches{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Live Matches <span class="badge bg-danger live-indicator">LIVE</span></h1>
+    <div>
+        <button class="btn btn-success" onclick="triggerScraping('live_matches')">
+            <i class="fas fa-sync"></i> Refresh Live Data
+        </button>
+    </div>
+</div>
+
+<div class="alert alert-info">
+    <i class="fas fa-info-circle"></i> This page auto-refreshes every 30 seconds to show the latest live match data.
+</div>
+
+<div class="row">
+    {% for match in live_matches %}
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card match-card border-success">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-broadcast-tower live-indicator"></i> LIVE
+                </h5>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ match.home_team }} vs {{ match.away_team }}</h5>
+                <p class="card-text">
+                    <i class="fas fa-calendar-alt"></i> {{ match.match_date|date:"M d, Y H:i" }}
+                    <br><i class="fas fa-map-marker-alt"></i> {{ match.location }}
+                </p>
+                <a href="{% url 'matches:match_detail' match.id %}" class="btn btn-primary">View Live Details</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-warning text-center">
+            <h4><i class="fas fa-exclamation-triangle"></i> No Live Matches</h4>
+            <p>There are currently no live matches. Check back later or view <a href="{% url 'matches:match_list' %}">all matches</a>.</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function triggerScraping(taskType) {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+    
+    $.ajax({
+        url: '{% url "matches:trigger_scraping" %}',
+        type: 'POST',
+        data: {
+            'task_type': taskType,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            if (response.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + response.message);
+            }
+        },
+        error: function() {
+            alert('Error triggering scraping task');
+        },
+        complete: function() {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    });
+}
+</script>
+{% endblock %}

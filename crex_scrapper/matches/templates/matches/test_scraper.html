@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Test Scraper{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h1>Test Scraper</h1>
+            </div>
+            <div class="card-body">
+                <p>Use this page to test the scraper functionality and manually trigger scraping tasks.</p>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Test Match List Scraping</h5>
+                                <p class="card-text">Test scraping the main match list from CREX.</p>
+                                <button class="btn btn-primary" onclick="testScraper()">
+                                    <i class="fas fa-play"></i> Test Scraper
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Update Match List</h5>
+                                <p class="card-text">Trigger the match list update task.</p>
+                                <button class="btn btn-success" onclick="triggerScraping('match_list')">
+                                    <i class="fas fa-sync"></i> Update Matches
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Check Live Matches</h5>
+                                <p class="card-text">Check and update live match data.</p>
+                                <button class="btn btn-warning" onclick="triggerScraping('live_matches')">
+                                    <i class="fas fa-broadcast-tower"></i> Check Live
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">View Logs</h5>
+                                <p class="card-text">Check the application logs for scraping activity.</p>
+                                <a href="/admin/" class="btn btn-info">
+                                    <i class="fas fa-eye"></i> View Admin
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Scraper Status</h5>
+            </div>
+            <div class="card-body">
+                <div id="scraper-status">
+                    <p class="text-muted">Click "Test Scraper" to check status</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Quick Links</h5>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'matches:match_list' %}" class="btn btn-outline-primary btn-block mb-2">
+                    <i class="fas fa-list"></i> All Matches
+                </a>
+                <a href="{% url 'matches:live_matches' %}" class="btn btn-outline-success btn-block mb-2">
+                    <i class="fas fa-broadcast-tower"></i> Live Matches
+                </a>
+                <a href="{% url 'matches:dashboard' %}" class="btn btn-outline-info btn-block">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Test Results</h5>
+            </div>
+            <div class="card-body">
+                <div id="test-results">
+                    <p class="text-muted">Test results will appear here</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function testScraper() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+    
+    // Update status
+    document.getElementById('scraper-status').innerHTML = 
+        '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> Testing scraper...</div>';
+    
+    $.ajax({
+        url: '{% url "matches:test_scraper" %}',
+        type: 'POST',
+        data: {
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            if (response.success) {
+                document.getElementById('scraper-status').innerHTML = 
+                    '<div class="alert alert-success"><i class="fas fa-check"></i> Scraper working correctly</div>';
+                
+                document.getElementById('test-results').innerHTML = 
+                    '<div class="alert alert-success">' +
+                    '<h6>Success!</h6>' +
+                    '<p>' + response.message + '</p>' +
+                    '<p><strong>Matches scraped:</strong> ' + response.matches_scraped + '</p>' +
+                    '</div>';
+            } else {
+                document.getElementById('scraper-status').innerHTML = 
+                    '<div class="alert alert-danger"><i class="fas fa-times"></i> Scraper error</div>';
+                
+                document.getElementById('test-results').innerHTML = 
+                    '<div class="alert alert-danger">' +
+                    '<h6>Error!</h6>' +
+                    '<p>' + response.message + '</p>' +
+                    '</div>';
+            }
+        },
+        error: function() {
+            document.getElementById('scraper-status').innerHTML = 
+                '<div class="alert alert-danger"><i class="fas fa-times"></i> Connection error</div>';
+            
+            document.getElementById('test-results').innerHTML = 
+                '<div class="alert alert-danger">' +
+                '<h6>Connection Error!</h6>' +
+                '<p>Could not connect to test the scraper</p>' +
+                '</div>';
+        },
+        complete: function() {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    });
+}
+
+function triggerScraping(taskType) {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
+    
+    $.ajax({
+        url: '{% url "matches:trigger_scraping" %}',
+        type: 'POST',
+        data: {
+            'task_type': taskType,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            if (response.success) {
+                document.getElementById('test-results').innerHTML = 
+                    '<div class="alert alert-success">' +
+                    '<h6>Task Triggered!</h6>' +
+                    '<p>' + response.message + '</p>' +
+                    '</div>';
+            } else {
+                document.getElementById('test-results').innerHTML = 
+                    '<div class="alert alert-danger">' +
+                    '<h6>Error!</h6>' +
+                    '<p>' + response.message + '</p>' +
+                    '</div>';
+            }
+        },
+        error: function() {
+            document.getElementById('test-results').innerHTML = 
+                '<div class="alert alert-danger">' +
+                '<h6>Connection Error!</h6>' +
+                '<p>Could not trigger the task</p>' +
+                '</div>';
+        },
+        complete: function() {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    });
+}
+</script>
+{% endblock %}

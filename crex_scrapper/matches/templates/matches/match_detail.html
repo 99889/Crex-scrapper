@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}{{ match.home_team }} vs {{ match.away_team }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="card-title">{{ match.home_team }} vs {{ match.away_team }}</h1>
+                <span class="badge 
+                    {% if match.status == 'Live' %}bg-success live-indicator
+                    {% elif match.status == 'Scheduled' %}bg-warning
+                    {% else %}bg-secondary{% endif %}">
+                    {{ match.status }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-calendar-alt"></i> Match Date</h5>
+                        <p>{{ match.match_date|date:"l, F d, Y" }}</p>
+                        <p>{{ match.match_date|date:"H:i" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-map-marker-alt"></i> Location</h5>
+                        <p>{{ match.location }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'matches:match_list' %}" class="btn btn-secondary btn-block mb-2">
+                    <i class="fas fa-arrow-left"></i> Back to All Matches
+                </a>
+                <a href="{% url 'matches:live_matches' %}" class="btn btn-success btn-block">
+                    <i class="fas fa-broadcast-tower"></i> Live Matches
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" id="matchTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">
+                            <i class="fas fa-info-circle"></i> Match Info
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="squads-tab" data-bs-toggle="tab" data-bs-target="#squads" type="button" role="tab">
+                            <i class="fas fa-users"></i> Squads
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="live-tab" data-bs-toggle="tab" data-bs-target="#live" type="button" role="tab">
+                            <i class="fas fa-broadcast-tower"></i> Live
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="scorecard-tab" data-bs-toggle="tab" data-bs-target="#scorecard" type="button" role="tab">
+                            <i class="fas fa-table"></i> Scorecard
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" id="matchTabsContent">
+                    <div class="tab-pane fade show active" id="info" role="tabpanel">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> 
+                            Detailed match information will be displayed here once scraped from the CREX website.
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h6>Teams</h6>
+                                <p><strong>{{ match.home_team }}</strong> (Home)</p>
+                                <p><strong>{{ match.away_team }}</strong> (Away)</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h6>Schedule</h6>
+                                <p>{{ match.match_date|date:"F d, Y" }}</p>
+                                <p>{{ match.match_date|date:"H:i" }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h6>Status</h6>
+                                <p>{{ match.status }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="squads" role="tabpanel">
+                        <div class="alert alert-info">
+                            <i class="fas fa-users"></i> 
+                            Team squads will be displayed here once scraped from the CREX website.
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>{{ match.home_team }} Squad</h5>
+                                <p class="text-muted">Squad information will be available once match details are scraped.</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>{{ match.away_team }} Squad</h5>
+                                <p class="text-muted">Squad information will be available once match details are scraped.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="live" role="tabpanel">
+                        <div class="alert alert-info">
+                            <i class="fas fa-broadcast-tower"></i> 
+                            Live match data will be displayed here when the match is in progress.
+                        </div>
+                        {% if match.status == 'Live' %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h5>{{ match.home_team }}</h5>
+                                        <h2 class="text-primary">-/-</h2>
+                                        <p class="text-muted">Overs: -</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h5>{{ match.away_team }}</h5>
+                                        <h2 class="text-primary">-/-</h2>
+                                        <p class="text-muted">Overs: -</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p class="text-muted">Live data will be available when the match starts.</p>
+                        {% endif %}
+                    </div>
+                    <div class="tab-pane fade" id="scorecard" role="tabpanel">
+                        <div class="alert alert-info">
+                            <i class="fas fa-table"></i> 
+                            Detailed scorecards will be displayed here once available.
+                        </div>
+                        <p class="text-muted">Scorecard data will be available once the match begins and is scraped from the CREX website.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh live data every 30 seconds if match is live
+// {% if match.status == 'Live' %}
+// setInterval(function() {
+//     location.reload();
+// }, 30000);
+// {% endif %}
+// </script>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-body">
+                <h2 class="card-title">{{ total_matches }}</h2>
+                <h6 class="card-title">Total Matches</h6>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body">
+                <h2 class="card-title">{{ live_matches }}</h2>
+                <h6 class="card-title">Live Matches</h6>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-body">
+                <h2 class="card-title">{{ scheduled_matches }}</h2>
+                <h6 class="card-title">Scheduled Matches</h6>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-secondary mb-3">
+            <div class="card-body">
+                <h2 class="card-title">{{ completed_matches }}</h2>
+                <h6 class="card-title">Completed Matches</h6>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3>Today's Matches</h3>
+<div class="row mb-4">
+    {% for match in today_matches %}
+    <div class="col-md-4">
+        <div class="card match-card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ match.home_team }} vs {{ match.away_team }}</h5>
+                <p class="card-text"><i class="fas fa-calendar-alt"></i> {{ match.match_date }}</p>
+                <p class="card-text"><i class="fas fa-map-marker-alt"></i> {{ match.location }}</p>
+                <a href="{% url 'matches:match_detail' match.id %}" class="btn btn-primary btn-sm">View Details</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-muted">No matches today.</p>
+    {% endfor %}
+</div>
+
+<h3>Recent Matches</h3>
+<div class="list-group">
+    {% for match in recent_matches %}
+    <a href="{% url 'matches:match_detail' match.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+        <div>
+            {{ match.home_team }} <span class="text-muted">vs</span> {{ match.away_team }}
+            <br><small class="text-muted">{{ match.match_date }}</small>
+        </div>
+        <span class="badge bg-primary rounded-pill status-badge">{{ match.status }}</span>
+    </a>
+    {% empty %}
+    <p class="text-muted">No recent matches.</p>
+    {% endfor %}
+</div>
+{% endblock %}

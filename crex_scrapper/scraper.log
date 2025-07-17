@@ -1,0 +1,4 @@
+Starting to scrape match list
+Scraped 0 matches from match list
+Error triggering scraping task: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+Error triggering scraping task: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
